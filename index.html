@@ -155,6 +155,35 @@
     <button class="btn btn-danger" onclick="resetGame()">Nuovo round</button>
   </div>
 
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCesXVZPkI0QvH6sRvXZ-SJEQ6jA6rU9wM",
+    authDomain: "christmas-game-a4411.firebaseapp.com",
+    projectId: "christmas-game-a4411",
+    storageBucket: "christmas-game-a4411.firebasestorage.app",
+    messagingSenderId: "828571907000",
+    appId: "1:828571907000:web:2953968a542841eb13154d"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  const db = getFirestore(app);
+window._db = db;
+window._collection = collection;
+window._addDoc = addDoc;
+  
+</script>
+
  <script>
   let budget = null;
   let wishesP1 = [];
@@ -249,23 +278,3 @@
 </script>
 </body>
 </html>
-
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCesXVZPkI0QvH6sRvXZ-SJEQ6jA6rU9wM",
-    authDomain: "christmas-game-a4411.firebaseapp.com",
-    projectId: "christmas-game-a4411",
-    storageBucket: "christmas-game-a4411.firebasestorage.app",
-    messagingSenderId: "828571907000",
-    appId: "1:828571907000:web:2953968a542841eb13154d"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
