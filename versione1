@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La lista dei desideri di Natale</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f0f8ff; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #45a049; }
+        #result { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .player-section { background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🎄 Il gioco: </h1>
+    <p>Inserisci un budget e scrivi 4 desideri che rientrano in quel budget. Player 1 scrive per primo!</p>
+    
+    <div id="budget-section">
+        <label>Budget: $<input type="number" id="budget" min="1" value="50"></label>
+    </div>
+    
+    <div class="player-section">
+        <h3>Player 1 Desideri</h3>
+        <div id="p1-wishes">
+            <input type="text" id="p1-wish1" placeholder="Desiderio 1">
+            <input type="text" id="p1-wish2" placeholder="Desiderio 2">
+            <input type="text" id="p1-wish3" placeholder="Desiderio 3">
+            <input type="text" id="p1-wish4" placeholder="Desiderio 4">
+        </div>
+        <button onclick="readyPlayer(1)">Player 1 Fatto</button>
+    </div>
+    
+    <div class="player-section">
+        <h3>Player 2 Desideri (4 items)</h3>
+        <div id="p2-wishes">
+            <input type="text" id="p1-wish1" placeholder="Desiderio 1">
+            <input type="text" id="p1-wish2" placeholder="Desiderio 2">
+            <input type="text" id="p1-wish3" placeholder="Desiderio 3">
+            <input type="text" id="p1-wish4" placeholder="Desiderio 4">
+        </div>
+        <button onclick="readyPlayer(2)">Player 2 Fatto</button>
+    </div>
+    
+    <button id="pick-btn" onclick="pickWish()" class="hidden" style="background: #ff9800;">Player 1: Clicca su un desiderio</button>
+    <div id="result"></div>
+    <button onclick="clearGame()" style="background: #f44336;">Nuovo Round</button>
+
+    <script>
+        let currentPlayer = 1;
+        let wishes = {1: [], 2: []};
+
+        function readyPlayer(player) {
+            wishes[player] = [];
+            for (let i = 1; i <= 4; i++) {
+                const wish = document.getElementById(`p${player}-wish${i}`).value.trim();
+                if (wish) wishes[player].push(wish);
+            }
+            if (wishes[player].length === 4) {
+                document.getElementById('pick-btn').classList.remove('hidden');
+                alert(`I sedideri del player ${player} Sono pronti!`);
+            } else {
+                alert('Inserisci 4 desideri!');
+            }
+        }
+
+        function pickWish() {
+            const playerWishes = wishes[currentPlayer];
+            if (playerWishes.length !== 4) return alert('Tutti i player devono aver scritto 4 desideri prima di iniziare');
+            
+            const randomIndex = Math.floor(Math.random() * playerWishes.length);
+            const picked = playerWishes[randomIndex];
+            document.getElementById('result').innerHTML = `Hai trovato: "${picked}" (Budget: $${document.getElementById('budget').value}) 🎁`;
+            document.getElementById('pick-btn').classList.add('hidden');
+            currentPlayer = 3 - currentPlayer; // Switch player
+        }
+
+        function clearGame() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
