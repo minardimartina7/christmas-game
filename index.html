@@ -7,13 +7,16 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
+      max-width: 720px;
       margin: 0 auto;
       padding: 20px;
       background: #f0f8ff;
     }
     h1 {
       font-size: 32px;
+    }
+    h2 {
+      margin-top: 0;
     }
     .screen {
       background: #e3f2fd;
@@ -51,11 +54,13 @@
     .btn:hover {
       background: #45a049;
     }
-    .btn-secondary {
-      background: #ff9800;
-    }
     .btn-danger {
       background: #f44336;
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
     }
     .boxes {
       display: grid;
@@ -77,227 +82,203 @@
       background: #fff3cd;
       transform: translateY(-2px);
     }
-    #result, #final-result {
+    #result {
       margin-top: 20px;
       background: #fff3cd;
       padding: 15px;
       border-radius: 8px;
       font-weight: bold;
     }
+    .role-banner {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border: 1px solid #bbdefb;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <h1>🎄 Il gioco:</h1>
-  <p>Player 1 e Player 2 giocano a distanza per scegliere un solo regalo a testa entro un budget.</p>
+  <p>
+    Questo sito funziona con due schermi diversi.<br>
+    Tu apri il link con <strong>?player=1</strong> e il tuo ragazzo con <strong>?player=2</strong>.
+  </p>
 
-  <!-- Screen 1: budget -->
-  <div id="screen-budget" class="screen">
+  <div id="role-banner" class="role-banner"></div>
+
+  <!-- Screen budget (solo player 1) -->
+  <div id="screen-budget" class="screen hidden">
     <h2>Passo 1: Scegli il budget</h2>
     <label for="budget-input">Budget (in € / $):</label>
     <input type="number" id="budget-input" min="1" placeholder="Es. 30">
     <button class="btn" onclick="saveBudget()">Avanti</button>
+    <p class="info">
+      Dopo aver scelto il budget, ditevelo a voce o in chat così usate lo stesso valore.
+    </p>
   </div>
 
-  <!-- Screen 2: wishes P1 -->
-  <div id="screen-p1-wishes" class="screen hidden">
-    <h2>Passo 2: Player 1 Desideri</h2>
-    <p>Player 1 inserisce 4 desideri che rientrano nel budget.</p>
+  <!-- Screen desideri (player specifico) -->
+  <div id="screen-wishes" class="screen hidden">
+    <h2 id="wishes-title"></h2>
+    <p id="wishes-text"></p>
     <label>Desiderio 1</label>
-    <input type="text" id="p1-wish1">
+    <input type="text" id="wish1">
     <label>Desiderio 2</label>
-    <input type="text" id="p1-wish2">
+    <input type="text" id="wish2">
     <label>Desiderio 3</label>
-    <input type="text" id="p1-wish3">
+    <input type="text" id="wish3">
     <label>Desiderio 4</label>
-    <input type="text" id="p1-wish4">
-    <button class="btn" onclick="saveWishes(1)">Player 1 fatto</button>
+    <input type="text" id="wish4">
+    <button class="btn" onclick="saveLocalWishes()">Salva desideri</button>
+    <p class="info">
+      Quando hai finito, avvisa l'altro giocatore. Ognuno compila i propri desideri sul proprio schermo.
+    </p>
   </div>
 
-  <!-- Screen 3: wishes P2 -->
-  <div id="screen-p2-wishes" class="screen hidden">
-    <h2>Passo 3: Player 2 Desideri</h2>
-    <p>Player 2 inserisce 4 desideri che rientrano nel budget.</p>
-    <label>Desiderio 1</label>
-    <input type="text" id="p2-wish1">
-    <label>Desiderio 2</label>
-    <input type="text" id="p2-wish2">
-    <label>Desiderio 3</label>
-    <input type="text" id="p2-wish3">
-    <label>Desiderio 4</label>
-    <input type="text" id="p2-wish4">
-    <button class="btn" onclick="saveWishes(2)">Player 2 fatto</button>
-  </div>
-
-  <!-- Screen 4: Player 1 picks a box (from P2 wishes) -->
-  <div id="screen-p1-pick" class="screen hidden">
-    <h2>Passo 4: Player 1 sceglie una scatola</h2>
-    <p>Player 1 clicca una scatola per scoprire quale desiderio di Player 2 dovrà comprare.</p>
+  <!-- Screen scelta scatola -->
+  <div id="screen-pick" class="screen hidden">
+    <h2 id="pick-title"></h2>
+    <p id="pick-text"></p>
+    <p class="info">
+      Scegli un numero di scatola (1–4). L'altro giocatore ti dirà a voce quale dei suoi desideri corrisponde a quella scatola.
+    </p>
     <div class="boxes">
-      <div class="box" onclick="pickFor(1,0)">Scatola 1</div>
-      <div class="box" onclick="pickFor(1,1)">Scatola 2</div>
-      <div class="box" onclick="pickFor(1,2)">Scatola 3</div>
-      <div class="box" onclick="pickFor(1,3)">Scatola 4</div>
+      <div class="box" onclick="pickBox(1)">Scatola 1</div>
+      <div class="box" onclick="pickBox(2)">Scatola 2</div>
+      <div class="box" onclick="pickBox(3)">Scatola 3</div>
+      <div class="box" onclick="pickBox(4)">Scatola 4</div>
     </div>
     <div id="result"></div>
+    <button class="btn btn-danger" onclick="resetGame()">Nuovo round (solo su questo schermo)</button>
   </div>
 
-  <!-- Screen 5: Player 2 picks a box (from P1 wishes) -->
-  <div id="screen-p2-pick" class="screen hidden">
-    <h2>Passo 5: Player 2 sceglie una scatola</h2>
-    <p>Player 2 clicca una scatola per scoprire quale desiderio di Player 1 dovrà comprare.</p>
-    <div class="boxes">
-      <div class="box" onclick="pickFor(2,0)">Scatola 1</div>
-      <div class="box" onclick="pickFor(2,1)">Scatola 2</div>
-      <div class="box" onclick="pickFor(2,2)">Scatola 3</div>
-      <div class="box" onclick="pickFor(2,3)">Scatola 4</div>
-    </div>
-    <div id="final-result"></div>
-    <button class="btn btn-danger" onclick="resetGame()">Nuovo round</button>
-  </div>
-
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCesXVZPkI0QvH6sRvXZ-SJEQ6jA6rU9wM",
-    authDomain: "christmas-game-a4411.firebaseapp.com",
-    projectId: "christmas-game-a4411",
-    storageBucket: "christmas-game-a4411.firebasestorage.app",
-    messagingSenderId: "828571907000",
-    appId: "1:828571907000:web:2953968a542841eb13154d"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-
-  const db = getFirestore(app);
-window._db = db;
-window._collection = collection;
-window._addDoc = addDoc;
-  
-</script>
-
- <script>
-  let budget = null;
-  let wishesP1 = [];
-  let wishesP2 = [];
-  let shuffledForP1 = [];
-  let shuffledForP2 = [];
-  let pickedP1 = null;
-
-  function goTo(id) {
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-
-  function saveBudget() {
-    const value = document.getElementById('budget-input').value;
-    if (!value || value <= 0) {
-      alert('Inserisci un budget valido.');
-      return;
+  <script>
+    // Legge ?player=1 o ?player=2 dalla URL
+    function getPlayerFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('player');
+      if (p === '1' || p === '2') return Number(p);
+      return null;
     }
-    budget = value;
-    goTo('screen-p1-wishes');
-  }
 
-  async function saveWishes(player) {
-  const wishes = [];
-  for (let i = 1; i <= 4; i++) {
-    const inputId = `p${player}-wish${i}`;
-    const val = document.getElementById(inputId).value.trim();
-    if (!val) {
-      alert('Scrivi tutti e 4 i desideri.');
-      return;
+    let player = getPlayerFromUrl();
+    let budget = null;
+
+    function init() {
+      const banner = document.getElementById('role-banner');
+
+      if (!player) {
+        banner.innerHTML =
+          'Nessun ruolo impostato. Aggiungi <strong>?player=1</strong> o <strong>?player=2</strong> alla fine del link.<br>' +
+          'Esempio: <code>' + window.location.origin + window.location.pathname + '?player=1</code>';
+        return;
+      }
+
+      if (player === 1) {
+        banner.innerHTML = 'Stai giocando come <strong>Player 1</strong>. ' +
+          'Usa questo schermo per inserire i tuoi desideri e scegliere la scatola del regalo per Player 2.';
+        showScreen('screen-budget');
+      } else {
+        banner.innerHTML = 'Stai giocando come <strong>Player 2</strong>. ' +
+          'Chiedi a Player 1 qual è il budget e inserisci i tuoi desideri con lo stesso valore.';
+        showScreen('screen-wishes');
+        setupWishesTexts();
+      }
     }
-    wishes.push(val);
-  }
 
-  if (player === 1) {
-    wishesP1 = wishes;
-  } else {
-    wishesP2 = wishes;
-  }
-
-  // Salva su Firestore
-  try {
-    const db = window._db;
-    const collection = window._collection;
-    const addDoc = window._addDoc;
-
-    await addDoc(collection(db, "wishLists"), {
-      player: player,
-      budget: budget,
-      wishes: wishes,
-      createdAt: new Date().toISOString()
-    });
-    console.log("Desideri salvati per player", player);
-  } catch (e) {
-    console.error("Errore salvataggio Firestore", e);
-  }
-
-  // Passaggio schermate
-  if (player === 1) {
-    goTo('screen-p2-wishes');
-  } else {
-    shuffledForP1 = shuffleArray([...wishesP2]);
-    goTo('screen-p1-pick');
-  }
-}
-
-
-  function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
     }
-    return arr;
-  }
 
-  function pickFor(player, index) {
-    if (player === 1) {
-      const wish = shuffledForP1[index];
-      if (!wish) return;
-      pickedP1 = wish;
-      document.getElementById('result').innerText =
-        `Player 1 comprerà: "${wish}" (Budget: ${budget}) 🎁`;
-      // ora prepariamo le scatole per Player 2
-      shuffledForP2 = shuffleArray([...wishesP1]);
-      setTimeout(() => goTo('screen-p2-pick'), 1200);
-    } else {
-      const wish = shuffledForP2[index];
-      if (!wish) return;
-      document.getElementById('final-result').innerText =
-        `Player 2 comprerà: "${wish}" (Budget: ${budget}) 🎁`;
+    function setupWishesTexts() {
+      const title = document.getElementById('wishes-title');
+      const text = document.getElementById('wishes-text');
+      if (player === 1) {
+        title.textContent = 'Passo 2: I tuoi desideri (Player 1)';
+        text.textContent = 'Inserisci 4 desideri che rientrano nel budget scelto.';
+      } else {
+        title.textContent = 'Passo 2: I tuoi desideri (Player 2)';
+        text.textContent = 'Inserisci 4 desideri che rientrano nel budget che ti ha detto Player 1.';
+      }
     }
-  }
 
-  function resetGame() {
-    budget = null;
-    wishesP1 = [];
-    wishesP2 = [];
-    shuffledForP1 = [];
-    shuffledForP2 = [];
-    pickedP1 = null;
-    // pulisci campi
-    document.getElementById('budget-input').value = '';
-    ['p1-wish1','p1-wish2','p1-wish3','p1-wish4',
-     'p2-wish1','p2-wish2','p2-wish3','p2-wish4'
-    ].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    document.getElementById('result').innerText = '';
-    document.getElementById('final-result').innerText = '';
-    goTo('screen-budget');
-  }
-</script>
+    function saveBudget() {
+      const val = document.getElementById('budget-input').value;
+      if (!val || val <= 0) {
+        alert('Inserisci un budget valido.');
+        return;
+      }
+      budget = val;
+      setupWishesTexts();
+      showScreen('screen-wishes');
+    }
+
+    function saveLocalWishes() {
+      const wishes = [];
+      for (let i = 1; i <= 4; i++) {
+        const v = document.getElementById('wish' + i).value.trim();
+        if (!v) {
+          alert('Scrivi tutti e 4 i desideri.');
+          return;
+        }
+        wishes.push(v);
+      }
+
+      // Salva SOLO nel localStorage del browser di quel player
+      const key = player === 1 ? 'wishesP1' : 'wishesP2';
+      localStorage.setItem(key, JSON.stringify({
+        budget: budget,
+        wishes: wishes
+      }));
+
+      alert('Desideri salvati! Ora parlate tra voi e passate alla scelta delle scatole.');
+      preparePickScreen();
+    }
+
+    function preparePickScreen() {
+      const title = document.getElementById('pick-title');
+      const text = document.getElementById('pick-text');
+
+      if (player === 1) {
+        title.textContent = 'Passo 3: Player 1 sceglie una scatola';
+        text.textContent = 'Scegli una scatola: Player 2 userà il tuo numero per decidere quale suo desiderio dovrai comprare.';
+      } else {
+        title.textContent = 'Passo 3: Player 2 sceglie una scatola';
+        text.textContent = 'Scegli una scatola: Player 1 userà il tuo numero per decidere quale suo desiderio dovrai comprare.';
+      }
+
+      document.getElementById('result').textContent = '';
+      showScreen('screen-pick');
+    }
+
+    function pickBox(n) {
+      const msg = player === 1
+        ? `Hai scelto la scatola n. ${n}. Player 2 ti dirà quale suo desiderio corrisponde a questo numero.`
+        : `Hai scelto la scatola n. ${n}. Player 1 ti dirà quale suo desiderio corrisponde a questo numero.`;
+      document.getElementById('result').textContent = msg;
+    }
+
+    function resetGame() {
+      document.getElementById('result').textContent = '';
+      if (player === 1) {
+        document.getElementById('budget-input').value = '';
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById('wish' + i).value = '';
+        }
+        budget = null;
+        showScreen('screen-budget');
+      } else {
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById('wish' + i).value = '';
+        }
+        showScreen('screen-wishes');
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
