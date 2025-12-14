@@ -155,16 +155,97 @@
     <button class="btn btn-danger" onclick="resetGame()">Nuovo round</button>
   </div>
 
-  <script>
-    let budget = null;
-    let wishesP1 = [];
-    let wishesP2 = [];
-    let shuffledForP1 = []; // P2 wishes shuffled
-    let shuffledForP2 = []; // P1 wishes shuffled
-    let pickedP1 = null;
+ <script>
+  let budget = null;
+  let wishesP1 = [];
+  let wishesP2 = [];
+  let shuffledForP1 = [];
+  let shuffledForP2 = [];
+  let pickedP1 = null;
 
-    function goTo(id) {
-      const screens = document.querySelectorAll('.screen');
-      screens.forEach(s => s.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
+  function goTo(id) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function saveBudget() {
+    const value = document.getElementById('budget-input').value;
+    if (!value || value <= 0) {
+      alert('Inserisci un budget valido.');
+      return;
     }
+    budget = value;
+    goTo('screen-p1-wishes');
+  }
+
+  function saveWishes(player) {
+    const wishes = [];
+    for (let i = 1; i <= 4; i++) {
+      const inputId = `p${player}-wish${i}`;
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) {
+        alert('Scrivi tutti e 4 i desideri.');
+        return;
+      }
+      wishes.push(val);
+    }
+    if (player === 1) {
+      wishesP1 = wishes;
+      goTo('screen-p2-wishes');
+    } else {
+      wishesP2 = wishes;
+      // prepariamo le scatole per Player 1
+      shuffledForP1 = shuffleArray([...wishesP2]);
+      goTo('screen-p1-pick');
+    }
+  }
+
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function pickFor(player, index) {
+    if (player === 1) {
+      const wish = shuffledForP1[index];
+      if (!wish) return;
+      pickedP1 = wish;
+      document.getElementById('result').innerText =
+        `Player 1 comprerà: "${wish}" (Budget: ${budget}) 🎁`;
+      // ora prepariamo le scatole per Player 2
+      shuffledForP2 = shuffleArray([...wishesP1]);
+      setTimeout(() => goTo('screen-p2-pick'), 1200);
+    } else {
+      const wish = shuffledForP2[index];
+      if (!wish) return;
+      document.getElementById('final-result').innerText =
+        `Player 2 comprerà: "${wish}" (Budget: ${budget}) 🎁`;
+    }
+  }
+
+  function resetGame() {
+    budget = null;
+    wishesP1 = [];
+    wishesP2 = [];
+    shuffledForP1 = [];
+    shuffledForP2 = [];
+    pickedP1 = null;
+    // pulisci campi
+    document.getElementById('budget-input').value = '';
+    ['p1-wish1','p1-wish2','p1-wish3','p1-wish4',
+     'p2-wish1','p2-wish2','p2-wish3','p2-wish4'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('result').innerText = '';
+    document.getElementById('final-result').innerText = '';
+    goTo('screen-budget');
+  }
+</script>
+</body>
+</html>
