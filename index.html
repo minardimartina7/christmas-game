@@ -208,27 +208,50 @@ window._addDoc = addDoc;
     goTo('screen-p1-wishes');
   }
 
-  function saveWishes(player) {
-    const wishes = [];
-    for (let i = 1; i <= 4; i++) {
-      const inputId = `p${player}-wish${i}`;
-      const val = document.getElementById(inputId).value.trim();
-      if (!val) {
-        alert('Scrivi tutti e 4 i desideri.');
-        return;
-      }
-      wishes.push(val);
+  async function saveWishes(player) {
+  const wishes = [];
+  for (let i = 1; i <= 4; i++) {
+    const inputId = `p${player}-wish${i}`;
+    const val = document.getElementById(inputId).value.trim();
+    if (!val) {
+      alert('Scrivi tutti e 4 i desideri.');
+      return;
     }
-    if (player === 1) {
-      wishesP1 = wishes;
-      goTo('screen-p2-wishes');
-    } else {
-      wishesP2 = wishes;
-      // prepariamo le scatole per Player 1
-      shuffledForP1 = shuffleArray([...wishesP2]);
-      goTo('screen-p1-pick');
-    }
+    wishes.push(val);
   }
+
+  if (player === 1) {
+    wishesP1 = wishes;
+  } else {
+    wishesP2 = wishes;
+  }
+
+  // Salva su Firestore
+  try {
+    const db = window._db;
+    const collection = window._collection;
+    const addDoc = window._addDoc;
+
+    await addDoc(collection(db, "wishLists"), {
+      player: player,
+      budget: budget,
+      wishes: wishes,
+      createdAt: new Date().toISOString()
+    });
+    console.log("Desideri salvati per player", player);
+  } catch (e) {
+    console.error("Errore salvataggio Firestore", e);
+  }
+
+  // Passaggio schermate
+  if (player === 1) {
+    goTo('screen-p2-wishes');
+  } else {
+    shuffledForP1 = shuffleArray([...wishesP2]);
+    goTo('screen-p1-pick');
+  }
+}
+
 
   function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
